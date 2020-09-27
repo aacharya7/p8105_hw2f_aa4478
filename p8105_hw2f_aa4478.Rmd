@@ -67,3 +67,70 @@ left_join(precip_df, month_df, by = "month")
 
 This dataset contains information from the Mr. Trashwheel trash collector located in Baltimore, MD. As trash enters the inner harbor, the trashwheel collects that trash and then stores it in a dumpster. The dataset contains information on year, month, and trash collected, including some specific kinds of trash. There are a total of 344 rows in our final dataset. Additional data sheets include month precipitation data. 
 
+##Problem 2
+```{r}
+##Read in the NYC transit data file, clean the data, retain specific variables and convert the variable entry from character to logic.##  
+nyc_transit = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
+  janitor::clean_names() %>%
+  select(line:entry, vending, ada) %>%
+  mutate(
+     entry = as.character(entry),
+     entry = replace(entry,entry == "YES", "TRUE"),
+       entry = replace(entry,entry == "NO", "FALSE"),
+       entry = as.logical(entry)
+)
+```
+
+```{r}
+names(nyc_transit)
+```
+```{r}
+nrow(nyc_transit)
+ncol(nyc_transit)
+```
+The NYC Transit dataset contains the variables: station name, line, entry division, routes served, ADA compliance, and several other variables pertaining to longitudinal/latitude data, entrance location and routes. My data cleaning steps so far have included 1) reading the data 2) cleaning the data 3) selecting desired variables and 4) changing the variable "entry" from character to logical. The dimensions of the 
+dataset is 1868 rows * 19 columns. The data is not tidy since there is a different column for each route number. 
+
+Finding the distinct stations 
+```{r}
+total_stations = select(nyc_transit,line,station_name,ada) %>%
+  distinct()
+nrow(total_stations)
+```
+There are 465 total distinct stations. 
+
+ADA compliant stations 
+```{r}
+ada_compliant = filter(total_stations, ada=="TRUE")
+nrow(ada_compliant)
+```
+There are a total of 84 stations that are ADA compliant. 
+
+Proportion of station entrances/exits without vending that allow entrance. 
+```{r}
+nrow(filter(nyc_transit, vending=="NO",entry=="TRUE"))/nrow(filter(nyc_transit,vending=="NO"))
+```
+37.70% of station entrances/exits without vending allow entrances. 
+
+Reformat data so that route number and route name are distinct variables
+```{r}
+formatted_nyc_transit = 
+  nyc_transit %>%
+  gather(key = "route_name", value = "route_number",route1:route11) %>%
+  filter(route_number=="A")
+```
+
+Finding the distinct stations that serve the A train 
+```{r}
+A_train = distinct(formatted_nyc_transit, line, station_name,.keep_all = TRUE)
+nrow(A_train)
+```
+There are a total of 60 distinct stations that serve the A train. 
+
+ADA complaince in A train
+```{r}
+nrow(filter(A_train,ada=="TRUE"))
+```
+Of the 60 distinct stations that serve the A train, 17 are ADA compliant. 
+
