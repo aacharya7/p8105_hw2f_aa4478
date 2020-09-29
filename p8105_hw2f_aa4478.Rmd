@@ -68,8 +68,9 @@ left_join(precip_df, month_df, by = "month")
 This dataset contains information from the Mr. Trashwheel trash collector located in Baltimore, MD. As trash enters the inner harbor, the trashwheel collects that trash and then stores it in a dumpster. The dataset contains information on year, month, and trash collected, including some specific kinds of trash. There are a total of 344 rows in our final dataset. Additional data sheets include month precipitation data. 
 
 ##Problem 2
+
+Read in the NYC transit data file, clean the data, retain specific variables and convert the variable entry from character to logic. 
 ```{r}
-##Read in the NYC transit data file, clean the data, retain specific variables and convert the variable entry from character to logic.##  
 nyc_transit = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>%
@@ -77,8 +78,8 @@ nyc_transit =
   mutate(
      entry = as.character(entry),
      entry = replace(entry,entry == "YES", "TRUE"),
-       entry = replace(entry,entry == "NO", "FALSE"),
-       entry = as.logical(entry)
+     entry = replace(entry,entry == "NO", "FALSE"),
+     entry = as.logical(entry)
 )
 ```
 
@@ -133,4 +134,47 @@ ADA complaince in A train
 nrow(filter(A_train,ada=="TRUE"))
 ```
 Of the 60 distinct stations that serve the A train, 17 are ADA compliant. 
+
+##Problem 3
+
+Read and clean the data. First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day. 
+```{r}
+pols_data=
+  read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(mon,into = c("year","month","day")) %>%
+  mutate(
+  year = as.character(year),
+  year = replace(year,year == "YES","TRUE"),
+  year = replace(year, year == "NO","FALSE"),
+  year = as.integer(year)
+  ) %>%
+  mutate(
+  day = as.character(day),
+  day = replace(day,day == "YES","TRUE"),
+  day = replace(day, day == "NO","FALSE"),
+  day = as.integer(day)
+  ) %>%
+  mutate(
+  month = as.character(month),
+  month = replace(month,month == "YES","TRUE"),
+  month = replace(month, month == "NO","FALSE"),
+  month = as.integer(month)
+  )
+```
+
+Replace month number as month name. 
+```{r}
+month_dataset= 
+  tibble(
+    month = 1:12,
+    month_name = month.name
+  )
+```
+
+Create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
+```{r}
+prez_data = 
+  select(pols_data, -prez_dem)
+```
 
