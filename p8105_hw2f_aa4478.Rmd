@@ -155,30 +155,22 @@ Of the 60 distinct stations that serve the A train, 17 are ADA compliant.
 
 ##Problem 3
 
-Read and clean the data. First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day. 
+Read and clean the data. First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day. create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 ```{r}
 pols_data=
   read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>%
   separate(mon,into = c("year","month","day")) %>%
   mutate(
-  year = as.character(year),
-  year = replace(year,year == "YES","TRUE"),
-  year = replace(year, year == "NO","FALSE"),
-  year = as.integer(year)
-  ) %>%
+    month = month.abb[as.factor(month)],
+    year = as.factor(year)
+  )%>%
   mutate(
-  day = as.character(day),
-  day = replace(day,day == "YES","TRUE"),
-  day = replace(day, day == "NO","FALSE"),
-  day = as.integer(day)
-  ) %>%
-  mutate(
-  month = as.character(month),
-  month = replace(month,month == "YES","TRUE"),
-  month = replace(month, month == "NO","FALSE"),
-  month = as.integer(month)
-  )
+    president = case_when(
+      prez_dem == 0 ~ "gop",
+      prez_dem == 1 ~ "dem")) %>%
+  relocate(year, month) %>%
+  select(-day, -prez_gop,-prez_dem)
 ```
 
 Replace month number as month name. 
@@ -190,39 +182,46 @@ month_dataset=
   )
 ```
 
-Create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
-```{r}
-prez_data = 
-  select(pols_data, -prez_dem,-prez_gop, -day)
-```
-
-Clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+Clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns. Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
 ```{r}
 snp_data =
   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>%
-    separate(date,into = c("year","month","day")) %>%
+    separate(date,into = c("day","month","year")) %>%
   mutate(
-  year = as.character(year),
-  year = replace(year,year == "YES","TRUE"),
-  year = replace(year, year == "NO","FALSE"),
-  year = as.integer(year)
-  ) %>%
+    month = month.abb[as.factor(month)],
+    year = as.factor(year)
+  )%>%
+  relocate(year, month)
+
+unemployment_data = 
+  read_csv("./data/fivethirtyeight_datasets/unemployment.csv") %>%
   mutate(
-  day = as.character(day),
-  day = replace(day,day == "YES","TRUE"),
-  day = replace(day, day == "NO","FALSE"),
-  day = as.integer(day)
-  ) %>%
-  mutate(
-  month = as.character(month),
-  month = replace(month,month == "YES","TRUE"),
-  month = replace(month, month == "NO","FALSE"),
-  month = as.integer(month)
-  )
+    Year = as.factor(Year)
+  ) %>% 
+  pivot_longer(
+    Jan:Dec,
+    names_to = "month",
+    values_to = "unemp"
+    ) %>%
+ rename(
+   year = Year
+ ) %>% mutate (
+   month = month.abb[as.factor(month)]
+ )
+```
+Join the datasets by merging snp into pols
+```{r}
+snp_pols = 
+  left_join(pols_data,snp_data, by = c("year","month"))
+```
+Merging unemployment into the result
+```{r}
+snp_pols_unemploy = 
+  left_join(snp_pols, unemployment_data, by = c("year","month"))
 ```
 
-  
-
-
-
+The "pols-month" data set includes information on the number of politicians including the president, governors, senators  in each party affiliation from the year 1947 to 2015.`pols_data` contains `r nrow(pols_data)` observations and `r ncol(pols_data)` variables related to the number of national politicians (the president, governors, senators, and representatives) who are democratic or republican. 
+The `snp` dataset contains `r nrow(snp_data)` observations and `r ncol(snp_data)` variables relating to the Standard & Poor's stock market index, which represents the stock market's performance overall. 
+The "'unemployment" dataset contains `r nrow(unemployment_data)` observations and `r ncol(unemployment_data)` variables, which provides the percentage of unemployment in a particular month from the year 1948 to 2015. 
+Then, using these datasets, a combined dataset `snp_pols_unemploy` was created, containing `r nrow(snp_pols_unemploy)` observations and `r ncol(snp_pols_unemploy)` variables. Some of the  key variables in the 'snp_pols_unemploy' include: "president", "close" and "unemp". These variables are important because they sum up the other datasets that we combined. 
