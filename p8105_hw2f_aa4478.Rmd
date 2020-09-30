@@ -220,8 +220,11 @@ Merging unemployment into the result
 snp_pols_unemploy = 
   left_join(snp_pols, unemployment_data, by = c("year","month"))
 ```
+Description of datasets: 
 
 The "pols-month" data set includes information on the number of politicians including the president, governors, senators  in each party affiliation from the year 1947 to 2015.`pols_data` contains `r nrow(pols_data)` observations and `r ncol(pols_data)` variables related to the number of national politicians (the president, governors, senators, and representatives) who are democratic or republican. 
+
 The `snp` dataset contains `r nrow(snp_data)` observations and `r ncol(snp_data)` variables relating to the Standard & Poor's stock market index, which represents the stock market's performance overall. 
+
 The "'unemployment" dataset contains `r nrow(unemployment_data)` observations and `r ncol(unemployment_data)` variables, which provides the percentage of unemployment in a particular month from the year 1948 to 2015. 
 Then, using these datasets, a combined dataset `snp_pols_unemploy` was created, containing `r nrow(snp_pols_unemploy)` observations and `r ncol(snp_pols_unemploy)` variables. Some of the  key variables in the 'snp_pols_unemploy' include: "president", "close" and "unemp". These variables are important because they sum up the other datasets that we combined. 
