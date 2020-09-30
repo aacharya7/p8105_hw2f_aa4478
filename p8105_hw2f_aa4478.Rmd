@@ -93,6 +93,24 @@ ncol(nyc_transit)
 The NYC Transit dataset contains the variables: station name, line, entry division, routes served, ADA compliance, and several other variables pertaining to longitudinal/latitude data, entrance location and routes. My data cleaning steps so far have included 1) reading the data 2) cleaning the data 3) selecting desired variables and 4) changing the variable "entry" from character to logical. The dimensions of the 
 dataset is 1868 rows * 19 columns. The data is not tidy since there is a different column for each route number. 
 
+Making the data tidy 
+```{r}
+nyc_transit_tidy = 
+  nyc_transit %>%
+  mutate(
+    route8 = as.character (route8),
+    route9 = as.character (route9),
+    route10 = as.character (route10),
+    route11 = as.character(route11)
+  ) %>%
+  pivot_longer(
+    route1 :route11,
+    names_to = "route_num",
+    values_to = "route_name"
+  )
+```
+
+
 Finding the distinct stations 
 ```{r}
 total_stations = select(nyc_transit,line,station_name,ada) %>%
@@ -175,6 +193,36 @@ month_dataset=
 Create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 ```{r}
 prez_data = 
-  select(pols_data, -prez_dem)
+  select(pols_data, -prez_dem,-prez_gop, -day)
 ```
+
+Clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+```{r}
+snp_data =
+  read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>%
+    separate(date,into = c("year","month","day")) %>%
+  mutate(
+  year = as.character(year),
+  year = replace(year,year == "YES","TRUE"),
+  year = replace(year, year == "NO","FALSE"),
+  year = as.integer(year)
+  ) %>%
+  mutate(
+  day = as.character(day),
+  day = replace(day,day == "YES","TRUE"),
+  day = replace(day, day == "NO","FALSE"),
+  day = as.integer(day)
+  ) %>%
+  mutate(
+  month = as.character(month),
+  month = replace(month,month == "YES","TRUE"),
+  month = replace(month, month == "NO","FALSE"),
+  month = as.integer(month)
+  )
+```
+
+  
+
+
 
